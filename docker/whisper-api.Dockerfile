@@ -1,5 +1,12 @@
 FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
 
+# Drop the CUDA forward-compat libcuda shipped by the base image. On a host whose
+# driver is older than it (e.g. 535) the NVIDIA runtime puts it in front of the
+# host driver, and on non-datacenter GPUs (RTX 3090 & co.) CTranslate2 then fails
+# with "forward compatibility was attempted on non supported HW". Without it the
+# CUDA 12.4 libs run on any driver >= 525 via minor-version compatibility.
+RUN rm -rf /usr/local/cuda/compat /usr/local/cuda-*/compat
+
 RUN apt-get update \
  && apt-get install -y --no-install-recommends python3.11 python3.11-venv \
  && rm -rf /var/lib/apt/lists/*
